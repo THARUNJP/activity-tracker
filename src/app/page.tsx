@@ -23,10 +23,17 @@ export default function TimerUI() {
   }, [timerOn]);
 
   function handleStart() {
+    alert("the timer has started");
     setTimerOn(true);
   }
   function handlePause() {
+    alert("the timer has paused");
     setTimerOn(false);
+  }
+   function handleReset() {
+    alert("the timer has paused");
+    setTimerOn(false);
+    setCount(0)
   }
 
   return (
@@ -56,6 +63,14 @@ export default function TimerUI() {
             className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 transition-all duration-300 shadow-lg shadow-red-500/30 text-lg font-semibold"
           >
             Pause
+          </button>
+
+
+           <button
+            onClick={handleReset}
+            className="flex-1 py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 transition-all duration-300 shadow-lg shadow-yellow-500/30 text-lg font-semibold"
+          >
+            Reset
           </button>
         </div>
       </div>

@@ -10,7 +10,7 @@ export default function TimerUI() {
     if (timerOn) {
       intervalRef.current = setInterval(() => {
         setCount((prev) => prev + 1);
-      }, 1000);
+      }, 100);
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
     }
@@ -23,17 +23,21 @@ export default function TimerUI() {
   }, [timerOn]);
 
   function handleStart() {
+    if (timerOn) return;
+
     alert("the timer has started");
     setTimerOn(true);
   }
   function handlePause() {
+    if (!timerOn) return;
     alert("the timer has paused");
     setTimerOn(false);
   }
-   function handleReset() {
-    alert("the timer has paused");
+  function handleReset() {
+    if (count === 0) return;
+    alert("the timer has reseted");
     setTimerOn(false);
-    setCount(0)
+    setCount(0);
   }
 
   return (
@@ -65,8 +69,7 @@ export default function TimerUI() {
             Pause
           </button>
 
-
-           <button
+          <button
             onClick={handleReset}
             className="flex-1 py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 transition-all duration-300 shadow-lg shadow-yellow-500/30 text-lg font-semibold"
           >

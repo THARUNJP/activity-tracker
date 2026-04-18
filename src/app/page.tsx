@@ -31,7 +31,7 @@ export default function TimerUI() {
   }
   function handlePause() {
     if (!timerOn) return;
-    showHotToast("the timer has paused","custom");
+    showHotToast("the timer has paused","error");
     setTimerOn(false);
   }
   function handleReset() {

@@ -1,4 +1,5 @@
 "use client";
+import { showHotToast } from "@/lib/toast";
 import { useEffect, useRef, useState } from "react";
 
 export default function TimerUI() {
@@ -25,17 +26,17 @@ export default function TimerUI() {
   function handleStart() {
     if (timerOn) return;
 
-    alert("the timer has started");
+    showHotToast("the timer has started","success");
     setTimerOn(true);
   }
   function handlePause() {
     if (!timerOn) return;
-    alert("the timer has paused");
+    showHotToast("the timer has paused","custom");
     setTimerOn(false);
   }
   function handleReset() {
     if (count === 0) return;
-    alert("the timer has reseted");
+    showHotToast("the timer has reseted","custom");
     setTimerOn(false);
     setCount(0);
   }

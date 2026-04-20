@@ -1,145 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 :root {
-  --bg: #0e0e12;
-  --bg-card: #16161d;
-  --bg-elevated: #1e1e28;
-  --border: #2a2a38;
-  --border-light: #363648;
-  --text-primary: #f0f0f5;
-  --text-secondary: #8888aa;
-  --text-muted: #55556a;
-  --accent: #7c6af7;
-  --accent-light: #9d8fff;
-  --accent-dim: rgba(124, 106, 247, 0.15);
-  --green: #4ade80;
-  --green-dim: rgba(74, 222, 128, 0.12);
-  --red: #f87171;
-  --red-dim: rgba(248, 113, 113, 0.12);
-  --yellow: #fbbf24;
-  --yellow-dim: rgba(251, 191, 36, 0.12);
-  --cyan: #22d3ee;
-  --cyan-dim: rgba(34, 211, 238, 0.1);
-  --orange: #fb923c;
-  --pink: #f472b6;
+  --bg-main: #0b1220;
+  --bg-card: #0f172a;
+  --bg-elevated: #111827;
+
+  --border: #1f2937;
+
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.15);
+
+  --hover: #111827;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; }
-
-body {
-  background: var(--bg);
-  color: var(--text-primary);
-  font-family: 'Syne', sans-serif;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-.animate-fade-in { animation: fade-in 0.35s ease forwards; }
-
-.glass-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
-
-.timer-display {
-  font-family: 'Space Mono', monospace;
-  font-size: clamp(2.5rem, 7vw, 5rem);
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
-.btn-primary:active { transform: translateY(0); }
-.btn-primary:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
-
-.input-field {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: var(--text-primary);
-  font-family: 'Syne', sans-serif;
-  font-size: 0.9rem;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.input-field:focus { border-color: var(--accent); }
-.input-field::placeholder { color: var(--text-muted); }
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.15s;
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: 100%;
-  font-family: 'Syne', sans-serif;
-}
-.nav-link:hover { background: var(--bg-elevated); color: var(--text-primary); }
-.nav-link.active { background: var(--accent-dim); color: var(--accent-light); }
-
-.progress-bar {
-  height: 6px;
-  background: var(--bg-elevated);
-  border-radius: 99px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.5s ease;
-}
-
-.custom-tooltip {
-  background: var(--bg-elevated) !important;
-  border: 1px solid var(--border-light) !important;
-  border-radius: 10px !important;
-  padding: 10px 14px !important;
-  font-family: 'Syne', sans-serif !important;
-  font-size: 13px !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
-}
-
-@media (max-width: 768px) {
-  .timer-display { font-size: 2.5rem; }
-  aside { display: none; }
-  main { margin-left: 0 !important; padding: 16px !important; }
+/* ✅ MAP TO TAILWIND TOKENS */
+@theme {
+  --color-card: var(--bg-card);
+  --color-border: var(--border);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accentSoft: var(--accent-soft);
+  --color-hover: var(--hover);
 }

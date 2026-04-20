@@ -6,10 +6,23 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const user = {
+    email: "",
+  };
   return (
-    <div className="flex">
-      <Sidebar userEmail="thax12@gmail.com" />
-      <main className="flex-1">{children}</main>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar userEmail={user.email ?? ""} />
+      <main
+        style={{
+          flex: 1,
+          marginLeft: "240px",
+          padding: "32px",
+          maxWidth: "100%",
+          overflowX: "hidden",
+        }}
+      >
+        {children}
+      </main>
     </div>
   );
 }

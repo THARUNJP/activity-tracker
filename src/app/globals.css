@@ -18,7 +18,6 @@
   --hover: #111827;
 }
 
-/* ✅ MAP TO TAILWIND TOKENS */
 @theme {
   --color-card: var(--bg-card);
   --color-border: var(--border);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/supabase/client";
+import { Clock } from "lucide-react";
 
 export default function AuthForm() {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -44,52 +45,20 @@ export default function AuthForm() {
   }
 
   return (
-    <div style={{ width: "100%", maxWidth: "420px" }}>
+    <div className="w-full max-w-md mx-auto">
       {/* Logo */}
-      <div style={{ textAlign: "center", marginBottom: "48px" }}>
-        <div
-          style={{
-            width: "56px",
-            height: "56px",
-            borderRadius: "16px",
-            background: "var(--accent-dim)",
-            border: "1px solid var(--accent)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "28px",
-            margin: "0 auto 20px",
-          }}
-        >
-          ⏱
-        </div>
-        <h1
-          style={{
-            fontSize: "1.75rem",
-            fontWeight: "800",
-            marginBottom: "8px",
-            letterSpacing: "-0.02em",
-          }}
-        >
+      <div className="text-center mb-12">
+        {/* <div className="logo-box"><Clock/></div> */}
+        <h1 className="text-2xl font-extrabold tracking-tight pt-4 mb-2">
           Activity Tracker
         </h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-          Track your time. Own your day.
-        </p>
+        <p className="text-muted text-sm">Track your time. Own your day.</p>
       </div>
 
       {/* Card */}
-      <div className="glass-card" style={{ padding: "32px" }}>
-        {/* Tab switcher */}
-        <div
-          style={{
-            display: "flex",
-            background: "var(--bg-elevated)",
-            borderRadius: "10px",
-            padding: "4px",
-            marginBottom: "28px",
-          }}
-        >
+      <div className="glass-card p-8">
+        {/* Tabs */}
+        <div className="tab-container">
           {(["login", "signup"] as const).map((m) => (
             <button
               key={m}
@@ -98,40 +67,17 @@ export default function AuthForm() {
                 setError("");
                 setMessage("");
               }}
-              style={{
-                flex: 1,
-                padding: "8px",
-                borderRadius: "8px",
-                border: "none",
-                background: mode === m ? "var(--accent)" : "transparent",
-                color: mode === m ? "white" : "var(--text-secondary)",
-                fontFamily: "Syne, sans-serif",
-                fontWeight: "600",
-                fontSize: "0.875rem",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
+              className={`tab-button ${mode === m ? "tab-active" : ""}`}
             >
               {m === "login" ? "Sign In" : "Sign Up"}
             </button>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "16px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.8rem",
-                fontWeight: "600",
-                color: "var(--text-secondary)",
-                marginBottom: "8px",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
-            >
-              Email
-            </label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email */}
+          <div>
+            <label className="label">Email</label>
             <input
               type="email"
               value={email}
@@ -142,67 +88,30 @@ export default function AuthForm() {
             />
           </div>
 
-          <div style={{ marginBottom: "24px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.8rem",
-                fontWeight: "600",
-                color: "var(--text-secondary)",
-                marginBottom: "8px",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
-            >
-              Password
-            </label>
+          {/* Password */}
+          <div>
+            <label className="label">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="••••••••"
               minLength={6}
+              placeholder="••••••••"
               className="input-field"
             />
           </div>
 
-          {error && (
-            <div
-              style={{
-                background: "var(--red-dim)",
-                border: "1px solid var(--red)",
-                borderRadius: "8px",
-                padding: "10px 14px",
-                marginBottom: "16px",
-                fontSize: "0.85rem",
-                color: "var(--red)",
-              }}
-            >
-              {error}
-            </div>
-          )}
-          {message && (
-            <div
-              style={{
-                background: "var(--green-dim)",
-                border: "1px solid var(--green)",
-                borderRadius: "8px",
-                padding: "10px 14px",
-                marginBottom: "16px",
-                fontSize: "0.85rem",
-                color: "var(--green)",
-              }}
-            >
-              {message}
-            </div>
-          )}
+          {/* Error */}
+          {error && <div className="alert-error">{error}</div>}
+
+          {/* Success */}
+          {message && <div className="alert-success">{message}</div>}
 
           <button
             type="submit"
-            className="btn-primary"
             disabled={loading}
-            style={{ width: "100%", opacity: loading ? 0.7 : 1 }}
+            className="btn-primary w-full disabled:opacity-70"
           >
             {loading
               ? "Loading..."
@@ -213,14 +122,7 @@ export default function AuthForm() {
         </form>
       </div>
 
-      <p
-        style={{
-          textAlign: "center",
-          marginTop: "24px",
-          fontSize: "0.8rem",
-          color: "var(--text-muted)",
-        }}
-      >
+      <p className="text-center mt-6 text-xs text-muted">
         Your data is private and secure.
       </p>
     </div>

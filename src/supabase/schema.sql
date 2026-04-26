@@ -7,6 +7,8 @@
 -- =========================
 
 CREATE TYPE activity_type AS ENUM ('manual', 'system');
+CREATE TYPE productivity_type  AS ENUM ('productive', 'leisure');
+
 CREATE TYPE target_period AS ENUM ('daily', 'weekly', 'monthly', 'yearly');
 
 
@@ -21,6 +23,7 @@ CREATE TABLE activities (
 
   name TEXT NOT NULL,
   type activity_type NOT NULL,
+  productivity productivity_type NOT NULL
   color TEXT,
   is_active BOOLEAN DEFAULT TRUE,
 

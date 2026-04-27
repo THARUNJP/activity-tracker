@@ -1,185 +1,180 @@
 -- ============================================================
--- Activity Tracker - Final Supabase Schema
+-- Activity Tracker - Final Schema (App-generated ULID)
 -- ============================================================
 
 -- =========================
 -- ENUMS
 -- =========================
-
-CREATE TYPE activity_type AS ENUM ('manual', 'system');
-CREATE TYPE productivity_type  AS ENUM ('productive', 'leisure');
-
-CREATE TYPE target_period AS ENUM ('daily', 'weekly', 'monthly', 'yearly');
-
+create type public.activity_type as enum ('manual', 'system');
+create type public.productivity_type as enum ('productive', 'leisure');
+create type public.target_period as enum ('daily', 'weekly', 'monthly', 'yearly');
 
 -- =========================
 -- ACTIVITIES TABLE
 -- =========================
+create table public.activities (
+  id varchar(26) primary key not null,
+  constraint activities_valid_ulid
+    check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
 
--- activities table
-CREATE TABLE activities (
-  id CHAR(26) PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id uuid not null references auth.users(id) on delete cascade,
 
-  name TEXT NOT NULL,
-  type activity_type NOT NULL,
-  productivity productivity_type NOT NULL
-  color TEXT,
-  is_active BOOLEAN DEFAULT TRUE,
+  name text not null,
+  type public.activity_type not null default 'manual',
+  color text not null default '#7c6af7',
+  icon text not null default '●',
+  productivity public.productivity_type not null,
 
-  created_at TIMESTAMPTZ DEFAULT now()
+  is_active boolean default true,
+  created_at timestamptz default now()
 );
 
--- unique activity name per user
-CREATE UNIQUE INDEX unique_activity_name
-ON activities(user_id, name);
+create unique index unique_activity_name
+on public.activities(user_id, name);
 
-CREATE INDEX idx_activities_user
-ON activities(user_id);
-
+create index idx_activities_user
+on public.activities(user_id);
 
 -- =========================
 -- TIME ENTRIES TABLE
 -- =========================
+create table public.time_entries (
+  id varchar(26) primary key not null,
+  constraint time_entries_valid_ulid
+    check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
 
--- core time tracking table
-CREATE TABLE time_entries (
-  id CHAR(26) PRIMARY KEY,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  activity_id varchar(26) not null references public.activities(id) on delete cascade,
 
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  activity_id CHAR(26) NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+  start_time timestamptz not null,
+  end_time timestamptz,
 
-  start_time TIMESTAMPTZ NOT NULL,
-  end_time TIMESTAMPTZ,
-  duration_seconds INT,
+  duration_seconds int generated always as (
+    case 
+      when end_time is not null 
+      then extract(epoch from (end_time - start_time))::int
+      else null
+    end
+  ) stored,
 
-  source activity_type NOT NULL,
+  source public.activity_type not null,
 
-  created_at TIMESTAMPTZ DEFAULT now(),
+  created_at timestamptz default now(),
 
-  CONSTRAINT valid_time
-    CHECK (end_time IS NULL OR end_time > start_time),
-
-  CONSTRAINT duration_positive
-    CHECK (duration_seconds IS NULL OR duration_seconds >= 0)
+  constraint valid_time
+    check (end_time is null or end_time > start_time)
 );
 
-CREATE INDEX idx_time_entries_user
-ON time_entries(user_id);
+create index idx_time_entries_user
+on public.time_entries(user_id);
 
-CREATE INDEX idx_time_entries_user_time
-ON time_entries(user_id, start_time DESC);
+create index idx_time_entries_user_time
+on public.time_entries(user_id, start_time desc);
 
-CREATE INDEX idx_time_entries_activity
-ON time_entries(activity_id);
+create index idx_time_entries_activity
+on public.time_entries(activity_id);
 
-CREATE INDEX idx_time_entries_user_activity
-ON time_entries(user_id, activity_id);
+create index idx_time_entries_user_activity
+on public.time_entries(user_id, activity_id);
 
--- only one active timer per user
-CREATE UNIQUE INDEX one_active_timer
-ON time_entries(user_id)
-WHERE end_time IS NULL;
-
+create unique index one_active_timer
+on public.time_entries(user_id)
+where end_time is null;
 
 -- =========================
--- DEFAULT SCHEDULES TABLE
+-- DEFAULT SCHEDULES
 -- =========================
+create table public.default_schedules (
+  id varchar(26) primary key not null,
+  constraint schedules_valid_ulid
+    check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
 
--- used for system-generated entries (sleep etc.)
-CREATE TABLE default_schedules (
-  id CHAR(26) PRIMARY KEY,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  activity_id varchar(26) not null references public.activities(id) on delete cascade,
 
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  activity_id CHAR(26) NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+  start_time time not null,
+  end_time time not null,
 
-  start_time TIME NOT NULL,
-  end_time TIME NOT NULL,
+  days_of_week int[] not null,
 
-  days_of_week INT[] NOT NULL,
+  created_at timestamptz default now(),
 
-  created_at TIMESTAMPTZ DEFAULT now()
+  constraint valid_schedule
+    check (end_time > start_time)
 );
 
-CREATE INDEX idx_default_schedules_user
-ON default_schedules(user_id);
-
+create index idx_default_schedules_user
+on public.default_schedules(user_id);
 
 -- =========================
--- DAILY SUMMARY TABLE
+-- DAILY SUMMARY
 -- =========================
+create table public.daily_activity_summary (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  date date not null,
+  activity_id varchar(26) not null references public.activities(id) on delete cascade,
+  total_duration_seconds int not null,
 
--- precomputed daily totals
-CREATE TABLE daily_activity_summary (
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  date DATE NOT NULL,
-  activity_id CHAR(26) NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
-  total_duration_seconds INT NOT NULL,
-
-  PRIMARY KEY (user_id, date, activity_id)
+  primary key (user_id, date, activity_id)
 );
 
-
 -- =========================
--- ACTIVITY TARGETS TABLE
+-- ACTIVITY TARGETS
 -- =========================
+create table public.activity_targets (
+  id varchar(26) primary key not null,
+  constraint targets_valid_ulid
+    check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
 
--- user-defined targets
-CREATE TABLE activity_targets (
-  id CHAR(26) PRIMARY KEY,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  activity_id varchar(26) not null references public.activities(id) on delete cascade,
 
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  activity_id CHAR(26) NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+  period public.target_period not null,
+  target_seconds int not null,
 
-  period target_period NOT NULL,
-  target_seconds INT NOT NULL,
-
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at timestamptz default now()
 );
 
-CREATE INDEX idx_targets_user
-ON activity_targets(user_id);
+create index idx_targets_user
+on public.activity_targets(user_id);
 
--- prevent duplicate targets
-CREATE UNIQUE INDEX unique_activity_target
-ON activity_targets(user_id, activity_id, period);
-
+create unique index unique_activity_target
+on public.activity_targets(user_id, activity_id, period);
 
 -- =========================
--- RLS (ROW LEVEL SECURITY)
+-- RLS
 -- =========================
-
-ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;
-ALTER TABLE default_schedules ENABLE ROW LEVEL SECURITY;
-ALTER TABLE daily_activity_summary ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activity_targets ENABLE ROW LEVEL SECURITY;
+alter table public.activities enable row level security;
+alter table public.time_entries enable row level security;
+alter table public.default_schedules enable row level security;
+alter table public.daily_activity_summary enable row level security;
+alter table public.activity_targets enable row level security;
 
 -- activities
-CREATE POLICY "own activities"
-ON activities FOR ALL
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+create policy "own activities"
+on public.activities for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
 -- time entries
-CREATE POLICY "own time entries"
-ON time_entries FOR ALL
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+create policy "own time entries"
+on public.time_entries for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
 -- schedules
-CREATE POLICY "own schedules"
-ON default_schedules FOR ALL
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+create policy "own schedules"
+on public.default_schedules for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
 -- summary (read only)
-CREATE POLICY "own summary"
-ON daily_activity_summary FOR SELECT
-USING (auth.uid() = user_id);
+create policy "own summary"
+on public.daily_activity_summary for select
+using (auth.uid() = user_id);
 
 -- targets
-CREATE POLICY "own targets"
-ON activity_targets FOR ALL
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+create policy "own targets"
+on public.activity_targets for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);

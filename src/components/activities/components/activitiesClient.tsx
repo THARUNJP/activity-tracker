@@ -62,38 +62,43 @@ export default function ActivitiesClient({
   const custom = activities.filter((a) => !a.is_default);
 
   return (
-    <div className="animate-fade-in max-w-[700px]">
+    <div className="animate-fade-in max-w-[820px] w-full mx-auto px-4 py-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-[1.75rem] font-extrabold tracking-tight mb-1">
-            Activities
-          </h1>
-          <p className="text-sm text-[var(--text-secondary)]">
+          <h1 className="text-2xl font-extrabold tracking-tight">Activities</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
             Manage your activity categories
           </p>
         </div>
 
         <button
           onClick={() => setShowForm(!showForm)}
-          className="btn-primary px-5 py-2.5"
+          className="
+    inline-flex items-center justify-center
+    px-5 py-2.5
+    text-sm font-semibold
+    rounded-lg
+    bg-[var(--accent)] text-white
+    hover:opacity-90
+    active:scale-[0.98]
+    transition-all duration-150
+  "
         >
-          {showForm ? "✕ Cancel" : "+ Add Activity"}
+          {showForm ? "Cancel" : "Add Activity"}
         </button>
       </div>
 
-      {/* Add form */}
+      {/* Form */}
       {showForm && (
-        <div className="glass-card p-6 mb-6">
-          <h3 className="font-bold mb-5">New Activity</h3>
+        <div className="glass-card p-6 mb-8">
+          <h3 className="font-semibold text-lg mb-6">New Activity</h3>
 
           <form onSubmit={addActivity}>
             {/* Grid */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
               <div>
-                <label className="block text-[0.78rem] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                  Name
-                </label>
+                <label className="label">Name</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -104,9 +109,7 @@ export default function ActivitiesClient({
               </div>
 
               <div>
-                <label className="block text-[0.78rem] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                  Type
-                </label>
+                <label className="label">Type</label>
                 <select
                   value={isProductive ? "productive" : "leisure"}
                   onChange={(e) =>
@@ -121,23 +124,20 @@ export default function ActivitiesClient({
             </div>
 
             {/* Icon */}
-            <div className="mb-4">
-              <label className="block text-[0.78rem] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                Icon
-              </label>
-
+            <div className="mb-5">
+              <label className="label">Icon</label>
               <div className="flex flex-wrap gap-2">
                 {ICONS.map((i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => setIcon(i)}
-                    className={`w-9 h-9 rounded-md text-lg flex items-center justify-center border-2 transition
-                    ${
-                      icon === i
-                        ? "border-[var(--accent)] bg-[var(--accent-dim)]"
-                        : "border-[var(--border)] bg-[var(--bg-elevated)]"
-                    }`}
+                    className={`w-9 h-9 rounded-md text-lg flex items-center justify-center border transition
+                ${
+                  icon === i
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)]"
+                    : "border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--accent)]"
+                }`}
                   >
                     {i}
                   </button>
@@ -146,20 +146,17 @@ export default function ActivitiesClient({
             </div>
 
             {/* Color */}
-            <div className="mb-5">
-              <label className="block text-[0.78rem] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                Color
-              </label>
-
+            <div className="mb-6">
+              <label className="label">Color</label>
               <div className="flex gap-2 flex-wrap">
                 {COLORS.map((c) => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => setColor(c)}
-                    className={`w-7 h-7 rounded-md border-3 ${
-                      color === c ? "border-white" : "border-transparent"
-                    }`}
+                    className={`w-7 h-7 rounded-md border-2 transition
+                  ${color === c ? "border-white scale-110" : "border-transparent"}
+                `}
                     style={{ background: c }}
                   />
                 ))}
@@ -167,12 +164,10 @@ export default function ActivitiesClient({
             </div>
 
             {/* Error */}
-            {error && (
-              <div className="text-[var(--red)] text-sm mb-3">{error}</div>
-            )}
+            {error && <div className="alert-error">{error}</div>}
 
             {/* Preview */}
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center gap-3 mb-6">
               <span className="text-xs text-[var(--text-muted)]">Preview:</span>
 
               <span
@@ -189,20 +184,22 @@ export default function ActivitiesClient({
 
             <button
               type="submit"
-              className="btn-primary w-full disabled:opacity-70"
+              className="btn-primary w-full"
               disabled={saving}
             >
-              {saving ? "Saving…" : "Create Activity"}
+              {saving ? "Saving..." : "Create Activity"}
             </button>
           </form>
         </div>
       )}
 
-      {/* Default */}
-      <div className="mb-6">
-        <h2 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3">
-          Default Activities
-        </h2>
+      {/* Default Activities */}
+      <section className="mb-8">
+        {activities.length > 0 && (
+          <h2 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3">
+            Default Activities
+          </h2>
+        )}
 
         <div className="flex flex-col gap-2">
           {defaults.map((a) => (
@@ -214,11 +211,11 @@ export default function ActivitiesClient({
             />
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Custom */}
+      {/* Custom Activities */}
       {custom.length > 0 && (
-        <div>
+        <section>
           <h2 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3">
             Custom Activities
           </h2>
@@ -233,7 +230,7 @@ export default function ActivitiesClient({
               />
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

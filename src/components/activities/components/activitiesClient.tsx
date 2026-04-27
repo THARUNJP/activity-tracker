@@ -75,23 +75,35 @@ export default function ActivitiesClient({
         <button
           onClick={() => setShowForm(!showForm)}
           className="
-    inline-flex items-center justify-center
-    px-5 py-2.5
-    text-sm font-semibold
-    rounded-lg
-    bg-[var(--accent)] text-white
-    hover:opacity-90
-    active:scale-[0.98]
-    transition-all duration-150
-  "
+          inline-flex items-center justify-center gap-2
+          px-5 py-2.5
+          text-sm font-semibold
+          rounded-lg
+          bg-[var(--accent)] text-white
+          hover:opacity-90
+          active:scale-[0.98]
+          transition-all duration-150
+        "
         >
+          <span
+            className={`inline-block transition-transform duration-200 ${
+              showForm ? "rotate-45" : "rotate-0"
+            }`}
+          >
+            +
+          </span>
           {showForm ? "Cancel" : "Add Activity"}
         </button>
       </div>
 
-      {/* Form */}
-      {showForm && (
-        <div className="glass-card p-6 mb-8">
+      {/* Form — slide open */}
+      <div
+        className={`
+        overflow-hidden transition-all duration-300 ease-in-out
+        ${showForm ? "max-h-[800px] opacity-100 mb-8" : "max-h-0 opacity-0 mb-0"}
+      `}
+      >
+        <div className="glass-card p-6">
           <h3 className="font-semibold text-lg mb-6">New Activity</h3>
 
           <form onSubmit={addActivity}>
@@ -132,12 +144,15 @@ export default function ActivitiesClient({
                     key={i}
                     type="button"
                     onClick={() => setIcon(i)}
-                    className={`w-9 h-9 rounded-md text-lg flex items-center justify-center border transition
-                ${
-                  icon === i
-                    ? "border-[var(--accent)] bg-[var(--accent-soft)]"
-                    : "border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--accent)]"
-                }`}
+                    className={`
+                    w-9 h-9 rounded-md text-lg flex items-center justify-center
+                    border transition-all duration-150
+                    ${
+                      icon === i
+                        ? "border-[var(--accent)] bg-[var(--accent-soft)] scale-110 shadow-sm"
+                        : "border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--accent)] hover:scale-105"
+                    }
+                  `}
                   >
                     {i}
                   </button>
@@ -154,9 +169,10 @@ export default function ActivitiesClient({
                     key={c}
                     type="button"
                     onClick={() => setColor(c)}
-                    className={`w-7 h-7 rounded-md border-2 transition
-                  ${color === c ? "border-white scale-110" : "border-transparent"}
-                `}
+                    className={`
+                    w-7 h-7 rounded-md border-2 transition-all duration-150
+                    ${color === c ? "border-white scale-110 shadow-md" : "border-transparent hover:scale-105"}
+                  `}
                     style={{ background: c }}
                   />
                 ))}
@@ -164,12 +180,11 @@ export default function ActivitiesClient({
             </div>
 
             {/* Error */}
-            {error && <div className="alert-error">{error}</div>}
+            {error && <div className="alert-error mb-4">{error}</div>}
 
             {/* Preview */}
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-6 p-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)]">
               <span className="text-xs text-[var(--text-muted)]">Preview:</span>
-
               <span
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold"
                 style={{
@@ -191,7 +206,7 @@ export default function ActivitiesClient({
             </button>
           </form>
         </div>
-      )}
+      </div>
 
       {/* Default Activities */}
       <section className="mb-8">
@@ -200,7 +215,6 @@ export default function ActivitiesClient({
             Default Activities
           </h2>
         )}
-
         <div className="flex flex-col gap-2">
           {defaults.map((a) => (
             <ActivityRow
@@ -219,7 +233,6 @@ export default function ActivitiesClient({
           <h2 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3">
             Custom Activities
           </h2>
-
           <div className="flex flex-col gap-2">
             {custom.map((a) => (
               <ActivityRow

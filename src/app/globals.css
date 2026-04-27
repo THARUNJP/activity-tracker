@@ -25,6 +25,9 @@
   --green-dim: rgba(34, 197, 94, 0.1);
 }
 
+html {
+  overflow-y: scroll;
+}
 /* Map to Tailwind tokens */
 @theme {
   --color-card: var(--bg-card);

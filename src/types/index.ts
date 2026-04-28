@@ -10,6 +10,8 @@ export interface Activity {
   created_at: string;
 }
 
+export type ActivityTarget = Pick<Activity, "id" | "name" | "color" | "icon">;
+
 export interface TimeEntry {
   id: string;
   user_id: string;
@@ -72,4 +74,19 @@ export const DEFAULT_ACTIVITY_ICONS: Record<string, string> = {
 export interface ActivityProps {
   userId: string;
   initialActivities: Activity[];
+}
+
+export type TargetPeriod = "daily" | "weekly" | "monthly" | "yearly";
+
+export interface Target {
+  id: string;
+  activity_id: string;
+  period: TargetPeriod;
+  target_seconds: number;
+}
+
+export interface TargetProps {
+  userId: string;
+  activities: ActivityTarget[];
+  initialTargets: Target[];
 }

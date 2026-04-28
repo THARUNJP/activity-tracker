@@ -16,6 +16,9 @@ export default async function Activities() {
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
+  if (error) {
+    console.error("Activities fetch error:", error.message);
+  }
 
   return (
     <ActivitiesClient userId={user.id} initialActivities={activities ?? []} />

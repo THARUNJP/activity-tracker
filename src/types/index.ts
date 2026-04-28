@@ -1,11 +1,12 @@
+export type ProductivityType = "productive" | "leisure";
+
 export interface Activity {
   id: string;
   user_id: string;
   name: string;
   color: string;
   icon: string;
-  is_default: boolean;
-  is_productive: boolean;
+  productivity_type: ProductivityType;
   created_at: string;
 }
 

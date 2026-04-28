@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ActivityProps } from "@/types";
+import { ActivityProps, ProductivityType } from "@/types";
 import { createClient } from "@/supabase/client";
 import { COLORS, ICONS } from "@/lib/constant";
 import { ActivityRow } from "./activityRow";
+import { ulid } from "ulid";
 
 export default function ActivitiesClient({
   userId,
@@ -15,7 +16,8 @@ export default function ActivitiesClient({
   const [name, setName] = useState("");
   const [color, setColor] = useState(COLORS[0]);
   const [icon, setIcon] = useState(ICONS[0]);
-  const [isProductive, setIsProductive] = useState(true);
+  const [Productive, setIsProductive] =
+    useState<ProductivityType>("productive");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const supabase = createClient();
@@ -29,12 +31,12 @@ export default function ActivitiesClient({
     const { data, error: err } = await supabase
       .from("activities")
       .insert({
+        id: ulid(),
         user_id: userId,
         name: name.trim(),
         color,
         icon,
-        is_default: false,
-        is_productive: isProductive,
+        productivity: Productive,
       })
       .select()
       .single();
@@ -57,9 +59,6 @@ export default function ActivitiesClient({
       .eq("user_id", userId);
     setActivities((prev) => prev.filter((a) => a.id !== id));
   }
-
-  const defaults = activities.filter((a) => a.is_default);
-  const custom = activities.filter((a) => !a.is_default);
 
   return (
     <div className="animate-fade-in max-w-[820px] w-full mx-auto px-4 py-4">
@@ -123,9 +122,9 @@ export default function ActivitiesClient({
               <div>
                 <label className="label">Type</label>
                 <select
-                  value={isProductive ? "productive" : "leisure"}
+                  value={Productive}
                   onChange={(e) =>
-                    setIsProductive(e.target.value === "productive")
+                    setIsProductive(e.target.value as ProductivityType)
                   }
                   className="input-field"
                 >
@@ -207,34 +206,14 @@ export default function ActivitiesClient({
           </form>
         </div>
       </div>
-
-      {/* Default Activities */}
-      <section className="mb-8">
-        {activities.length > 0 && (
-          <h2 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3">
-            Default Activities
-          </h2>
-        )}
-        <div className="flex flex-col gap-2">
-          {defaults.map((a) => (
-            <ActivityRow
-              key={a.id}
-              activity={a}
-              canDelete={false}
-              onDelete={() => {}}
-            />
-          ))}
-        </div>
-      </section>
-
       {/* Custom Activities */}
-      {custom.length > 0 && (
+      {activities.length > 0 && (
         <section>
           <h2 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3">
-            Custom Activities
+            Activities
           </h2>
           <div className="flex flex-col gap-2">
-            {custom.map((a) => (
+            {activities.map((a) => (
               <ActivityRow
                 key={a.id}
                 activity={a}

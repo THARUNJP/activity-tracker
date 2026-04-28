@@ -9,11 +9,12 @@ export default async function Activities() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth");
 
-  const { data: activities } = await supabase
+  const { data: activities, error } = await supabase
     .from("activities")
     .select("*")
     .eq("user_id", user.id)
-    .order("is_default", { ascending: false });
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
 
   return (
     <ActivitiesClient userId={user.id} initialActivities={activities ?? []} />

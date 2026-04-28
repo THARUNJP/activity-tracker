@@ -16,6 +16,7 @@ export default async function Activities() {
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
+
   return (
     <ActivitiesClient userId={user.id} initialActivities={activities ?? []} />
   );

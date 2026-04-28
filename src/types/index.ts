@@ -6,7 +6,7 @@ export interface Activity {
   name: string;
   color: string;
   icon: string;
-  productivity_type: ProductivityType;
+  productivity: ProductivityType;
   created_at: string;
 }
 

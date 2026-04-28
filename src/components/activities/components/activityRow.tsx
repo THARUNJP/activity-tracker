@@ -27,8 +27,7 @@ export function ActivityRow({
         <div className="font-bold text-[0.95rem]">{activity.name}</div>
 
         <div className="text-[0.78rem] text-[var(--text-muted)] mt-[2px]">
-          {activity.is_productive ? "✦ Productive" : "◌ Leisure"}
-          {activity.is_default && " · Default"}
+          {activity.productivity === "productive" ? "✦ Productive" : "◌ Leisure"}
         </div>
       </div>
 

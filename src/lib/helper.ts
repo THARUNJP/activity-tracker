@@ -4,7 +4,8 @@ import { ActivityTarget } from "@/types";
 export const getActivity = (id: string, activities: ActivityTarget[]) =>
   activities.find((a) => a.id === id);
 
-export const formatHours = (seconds: number) => `${Math.round(seconds / 3600)}h`;
+export const formatHours = (seconds: number) =>
+  `${Math.round(seconds / 3600)}h`;
 
 export const formatDuration = (seconds: number) => {
   const totalMinutes = Math.round(seconds / 60);
@@ -31,3 +32,10 @@ export const formatDays = (days: number[]) => {
 
 // "HH:MM:SS" or "HH:MM" -> "HH:MM"
 export const formatTime = (t: string) => (t ? t.slice(0, 5) : "");
+
+export function formatTimer(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}

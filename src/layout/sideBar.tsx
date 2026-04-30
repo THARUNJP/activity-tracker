@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Activity,
-  Settings,
+  CalendarClock,
   Target,
   LogOut,
 } from "lucide-react";
@@ -14,7 +14,11 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/activities", label: "Activities", icon: Activity },
   { href: "/targets", label: "Targets", icon: Target },
-  { href: "/settings", label: "Settings", icon: Settings },
+  {
+    href: "/default-schedules",
+    label: "Default Schedules",
+    icon: CalendarClock,
+  },
 ];
 
 export default function Sidebar({ userEmail }: { userEmail: string }) {

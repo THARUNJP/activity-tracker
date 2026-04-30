@@ -14,7 +14,11 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/activities", label: "Activities", icon: Activity },
   { href: "/targets", label: "Targets", icon: Target },
-  { href: "/schedules", label: "Schedules", icon: CalendarClock },
+  {
+    href: "/default-schedules",
+    label: "Default Schedules",
+    icon: CalendarClock,
+  },
 ];
 
 export default function Sidebar({ userEmail }: { userEmail: string }) {

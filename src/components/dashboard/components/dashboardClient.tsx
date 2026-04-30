@@ -1,3 +1,5 @@
+"use client";
+
 import { Activity } from "@/types";
 import TimerWidget from "./timerWidget";
 import { useState } from "react";
@@ -21,18 +23,12 @@ export default function DashboardClient({ userId, initialActivities }: Props) {
   return (
     <div className="animate-fade-in">
       {/* Header */}
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontSize: "1.75rem",
-            fontWeight: "800",
-            letterSpacing: "-0.02em",
-            marginBottom: "6px",
-          }}
-        >
+      <div className="mb-8">
+        <h1 className="mb-1.5 text-[1.75rem] font-extrabold tracking-[-0.02em]">
           Dashboard
         </h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+
+        <p className="text-sm text-[var(--text-secondary)]">
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
             month: "long",

@@ -157,6 +157,7 @@ html {
   .text-muted {
     color: var(--text-muted);
   }
+  
 }
 
 @layer utilities {
@@ -175,3 +176,4 @@ html {
     animation: fade-in 0.4s ease-out;
   }
 }
+

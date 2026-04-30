@@ -90,3 +90,19 @@ export interface TargetProps {
   activities: ActivityTarget[];
   initialTargets: Target[];
 }
+
+export interface Schedule {
+  id: string;
+  user_id: string;
+  activity_id: string;
+  start_time: string; // "HH:MM:SS" or "HH:MM"
+  end_time: string;
+  days_of_week: number[]; // 0=Sun .. 6=Sat
+  created_at: string;
+}
+
+export interface ScheduleProps {
+  userId: string;
+  activities: ActivityTarget[];
+  initialSchedules: Schedule[];
+}

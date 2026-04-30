@@ -14,3 +14,20 @@ export const formatDuration = (seconds: number) => {
   if (h) return `${h}h`;
   return `${m}m`;
 };
+
+// 0 = Sun, 1 = Mon, ..., 6 = Sat
+export const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+export const WEEKDAYS = [1, 2, 3, 4, 5];
+export const WEEKEND = [0, 6];
+
+export const formatDays = (days: number[]) => {
+  if (!days?.length) return "—";
+  const sorted = [...days].sort((a, b) => a - b);
+  if (sorted.length === 7) return "Every day";
+  if (sorted.join(",") === WEEKDAYS.join(",")) return "Weekdays";
+  if (sorted.join(",") === WEEKEND.join(",")) return "Weekends";
+  return sorted.map((d) => DAY_LABELS[d]).join(", ");
+};
+
+// "HH:MM:SS" or "HH:MM" -> "HH:MM"
+export const formatTime = (t: string) => (t ? t.slice(0, 5) : "");

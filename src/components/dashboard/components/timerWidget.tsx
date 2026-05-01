@@ -4,8 +4,7 @@ import { useState } from "react";
 import type { Activity } from "@/types";
 import { useTimer } from "@/hooks/useTimer";
 import { showHotToast } from "@/lib/toast";
-import { TimerChips } from "./timerChips";
-import { TimerDisplay } from "./timerDisplay";
+
 
 type TimerHook = ReturnType<typeof useTimer>;
 
@@ -17,102 +16,172 @@ interface Props {
 
 export default function TimerWidget({ activities, timer, onSaved }: Props) {
   const [saving, setSaving] = useState(false);
+
   const { timerState, displaySeconds, start, pause, stop, reset, setActivity } =
     timer;
 
   const selectedActivity = activities.find(
     (a) => a.id === timerState.activityId,
   );
+
   const isRunning = timerState.isRunning;
   const hasTime = displaySeconds > 0;
   const canStart = !!timerState.activityId;
+
+  function format(seconds: number) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+    const s = String(seconds % 60).padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  }
 
   async function handleStop() {
     setSaving(true);
     const result = await stop();
     setSaving(false);
 
-    if (result.skippedShort) {
-      showHotToast("Session too short — discarded", "custom");
-      return;
-    }
-    if (result.error) {
-      showHotToast(result.error, "error");
-      return;
-    }
-    if (result.id) {
-      showHotToast("Session saved", "success");
+    if (result?.id) {
       onSaved();
     }
   }
 
   function handleStartPause() {
-    if (!timerState.activityId) {
-      showHotToast("Pick an activity first", "error");
-      return;
-    }
+    if (!canStart) return;
+
     if (isRunning) pause();
-    else start(timerState.activityId);
+    else start(timerState.activityId!);
   }
 
   return (
-    <div className="glass-card relative overflow-hidden p-6">
-      {isRunning && (
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(124,106,247,0.08)_0%,transparent_70%)]" />
-      )}
+    <div className="space-y-4">
+      {/* SECTION LABEL */}
+      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)] px-1">
+        Timer
+      </p>
 
-      <TimerDisplay
-        seconds={displaySeconds}
-        state={isRunning ? "running" : hasTime ? "paused" : "ready"}
-        activity={selectedActivity}
-      />
+      {/* ACTIVITY CHIPS */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {activities.map((a) => {
+          const active = a.id === timerState.activityId;
 
-      {/* Activity chips — horizontal scroll */}
-      <div className="relative mt-5">
-        <TimerChips
-          activities={activities}
-          selectedId={timerState.activityId}
-          onSelect={(id) => {
-            setActivity(id);
-            if (!isRunning) start(id);
-          }}
-        />
+          return (
+            <button
+              key={a.id}
+              onClick={() => setActivity(a.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm whitespace-nowrap transition
+                ${
+                  active
+                    ? "bg-[var(--accent-soft)] border-[var(--accent)] text-[var(--accent)]"
+                    : "bg-[var(--bg-elevated)] border-[var(--border)] text-[var(--text-secondary)]"
+                }
+              `}
+            >
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{ background: a.color }}
+              />
+              {a.name}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Controls */}
-      <div className="mt-5 flex items-center justify-center gap-2.5">
-        {hasTime && !isRunning && (
-          <button
-            onClick={reset}
-            className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition"
-          >
-            Reset
-          </button>
-        )}
+      {/* MAIN CARD */}
+      <div className="glass-card overflow-hidden">
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
+          <div className="flex items-center gap-3">
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ background: selectedActivity?.color }}
+            />
 
-        {hasTime && (
-          <button
-            onClick={handleStop}
-            disabled={saving || isRunning}
-            className="rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-5 py-2 text-sm font-bold text-[var(--text-primary)] disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition"
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
-        )}
+            <span className="font-semibold text-base">
+              {selectedActivity?.name || "Select Activity"}
+            </span>
+          </div>
 
-        <button
-          onClick={handleStartPause}
-          disabled={!canStart}
-          className={`min-w-[110px] rounded-xl px-7 py-3 text-sm font-bold transition ${
-            isRunning
-              ? "bg-[var(--yellow,#fbbf24)] text-black"
-              : canStart
-                ? "bg-[var(--accent)] text-white hover:opacity-90"
-                : "bg-[var(--bg-elevated)] text-[var(--text-muted)] cursor-not-allowed"
-          }`}
-        >
-          {isRunning ? "⏸ Pause" : hasTime ? "▶ Resume" : "▶ Start"}
-        </button>
+          {selectedActivity && (
+            <span
+              className={`text-xs px-3 py-1 rounded-full font-medium
+                ${
+                  selectedActivity.productivity === "productive"
+                    ? "bg-[var(--green-dim)] text-[var(--green)]"
+                    : "bg-[var(--red-dim)] text-[var(--red)]"
+                }
+              `}
+            >
+              {selectedActivity.productivity === "productive"
+                ? "Productive"
+                : "Leisure"}
+            </span>
+          )}
+        </div>
+
+        {/* TIMER DISPLAY */}
+        <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+          <div
+            className={`font-mono tracking-tight tabular-nums leading-none
+              text-5xl sm:text-6xl md:text-7xl font-light
+              ${
+                isRunning
+                  ? "text-[var(--accent)]"
+                  : hasTime
+                    ? "text-[var(--text-primary)]"
+                    : "text-[var(--text-muted)]"
+              }
+            `}
+            style={{ fontFamily: "Space Mono, monospace" }}
+          >
+            {format(displaySeconds)}
+          </div>
+
+          <div className="mt-2 text-sm text-[var(--text-muted)]">
+            {isRunning
+              ? "Recording..."
+              : hasTime
+                ? "Paused"
+                : "Ready to start"}
+          </div>
+        </div>
+
+        {/* ACTIONS */}
+        <div className="flex items-center justify-center gap-3 px-5 pb-5">
+          {hasTime && !isRunning && (
+            <button
+              onClick={reset}
+              className="px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)]"
+            >
+              Reset
+            </button>
+          )}
+
+          {hasTime && (
+            <button
+              onClick={handleStop}
+              disabled={saving || isRunning}
+              className="px-4 py-2 rounded-lg border border-[var(--border)] text-sm"
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+          )}
+
+          <button
+            onClick={handleStartPause}
+            disabled={!canStart}
+            className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition
+              ${
+                isRunning
+                  ? "bg-[var(--red)] text-white"
+                  : canStart
+                    ? "bg-[var(--accent)] text-white"
+                    : "bg-[var(--bg-elevated)] text-[var(--text-muted)]"
+              }
+            `}
+          >
+            {isRunning ? "Stop" : hasTime ? "Resume" : "Start"}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -10,7 +10,6 @@ import TimerWidget from "./timerWidget";
 import TodayStats from "./todayStats";
 import BreakdownSection from "./breakdownStats";
 import { TargetsSection } from "./targetSection";
-import RecentSessions from "./recentSessions";
 
 export default function DashboardClient({
   userId,
@@ -86,7 +85,6 @@ export default function DashboardClient({
         activities={activities}
       />
 
-      <RecentSessions entries={entries} activities={activities} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { AnalyticsPeriod, DateRange } from "@/types";
 import { exclusiveEndDate, inclusiveEndDate } from "@/lib/helper";
-import { DateRangePopover } from "./dateRangePopover";
+import { DatePopover } from "./datePopover";
 
 const PERIODS: { id: AnalyticsPeriod; label: string }[] = [
   { id: "week", label: "Week" },
@@ -28,6 +28,8 @@ export function AnalyticsControls({
   customMode: Mode;
   setCustomMode: (m: Mode) => void;
 }) {
+  const inclusiveEnd = inclusiveEndDate(customRange.end);
+
   function switchMode(next: Mode) {
     if (next === customMode) return;
     if (next === "single") {
@@ -44,6 +46,22 @@ export function AnalyticsControls({
       });
     }
     setCustomMode(next);
+  }
+
+  function setSingle(d: Date) {
+    setCustomRange({ start: d, end: exclusiveEndDate(d) });
+  }
+
+  function setRangeStart(d: Date) {
+    // If new start is after current end, push end forward to match
+    const endIncl = inclusiveEnd < d ? d : inclusiveEnd;
+    setCustomRange({ start: d, end: exclusiveEndDate(endIncl) });
+  }
+
+  function setRangeEnd(d: Date) {
+    // If new end is before current start, pull start back to match
+    const start = d < customRange.start ? d : customRange.start;
+    setCustomRange({ start, end: exclusiveEndDate(d) });
   }
 
   return (
@@ -91,11 +109,38 @@ export function AnalyticsControls({
             </button>
           </div>
 
-          <DateRangePopover
-            mode={customMode}
-            range={customRange}
-            onChange={setCustomRange}
-          />
+          {customMode === "single" ? (
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                Date
+              </label>
+              <DatePopover value={customRange.start} onChange={setSingle} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                  Start date
+                </label>
+                <DatePopover
+                  value={customRange.start}
+                  onChange={setRangeStart}
+                  align="left"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                  End date
+                </label>
+                <DatePopover
+                  value={inclusiveEnd}
+                  onChange={setRangeEnd}
+                  minDate={customRange.start}
+                  align="right"
+                />
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-[11px] text-[var(--text-muted)]">

@@ -197,13 +197,26 @@ html {
   --rdp-day_button-border-radius: 8px;
   --rdp-selected-border: 1px solid var(--accent);
   --rdp-today-color: var(--accent);
-  --rdp-range_middle-background-color: var(--accent-soft);
-  --rdp-range_middle-color: var(--text-primary);
   --rdp-outside-opacity: 0.35;
   --rdp-disabled-opacity: 0.35;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.85rem;
+}
+
+/* Strip every default light bg the package may apply */
+.rdp-root,
+.rdp-root .rdp-months,
+.rdp-root .rdp-month,
+.rdp-root .rdp-month_grid,
+.rdp-root .rdp-weeks,
+.rdp-root .rdp-week,
+.rdp-root .rdp-day,
+.rdp-root .rdp-selected,
+.rdp-root .rdp-range_start,
+.rdp-root .rdp-range_middle,
+.rdp-root .rdp-range_end {
+  background: transparent !important;
 }
 
 .rdp-root .rdp-month_caption {
@@ -221,13 +234,20 @@ html {
 
 .rdp-root .rdp-day_button {
   color: var(--text-secondary);
+  background: transparent;
+  border: none;
   border-radius: 8px;
   transition: background 0.15s, color 0.15s;
 }
 
 .rdp-root .rdp-day_button:hover:not([disabled]) {
-  background: var(--bg-elevated);
+  background: var(--bg-elevated) !important;
   color: var(--text-primary);
+}
+
+.rdp-root .rdp-day_button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .rdp-root .rdp-today .rdp-day_button {
@@ -235,20 +255,7 @@ html {
   font-weight: 700;
 }
 
-/* Override package defaults — kill the white range-middle bg */
-.rdp-root .rdp-range_middle,
-.rdp-root .rdp-range_start,
-.rdp-root .rdp-range_end,
-.rdp-root .rdp-selected {
-  background-color: transparent !important;
-}
-
-.rdp-root .rdp-selected .rdp-day_button {
-  background: var(--accent);
-  color: white;
-  font-weight: 600;
-}
-
+.rdp-root .rdp-selected .rdp-day_button,
 .rdp-root .rdp-range_start .rdp-day_button,
 .rdp-root .rdp-range_end .rdp-day_button {
   background: var(--accent) !important;
@@ -260,11 +267,6 @@ html {
   background: var(--accent-soft) !important;
   color: var(--text-primary) !important;
   border-radius: 0 !important;
-  font-weight: 500;
-}
-
-.rdp-root .rdp-range_middle .rdp-day_button:hover {
-  background: rgba(99, 102, 241, 0.25) !important;
 }
 
 .rdp-root .rdp-chevron {

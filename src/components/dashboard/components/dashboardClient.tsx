@@ -10,6 +10,7 @@ import TimerWidget from "./timerWidget";
 import TodayStats from "./todayStats";
 import BreakdownSection from "./breakdownStats";
 import { TargetsSection } from "./targetSection";
+import { ProductivitySection } from "./productivity";
 
 export default function DashboardClient({
   userId,
@@ -70,21 +71,18 @@ export default function DashboardClient({
         <p className="text-sm text-[var(--text-secondary)] mt-1">{today}</p>
       </div>
 
-      <TimerWidget
-        activities={activities}
-        timer={timer}
-        onSaved={refresh}
-      />
+      <TimerWidget activities={activities} timer={timer} onSaved={refresh} />
 
       <TodayStats summary={summary} />
 
       <BreakdownSection summary={summary} activities={activities} />
 
-      <TargetsSection
-        targets={targetsWithProgress}
-        activities={activities}
+      <ProductivitySection
+        productiveSeconds={summary.productiveSeconds}
+        leisureSeconds={summary.leisureSeconds}
       />
 
+      <TargetsSection targets={targetsWithProgress} activities={activities} />
     </div>
   );
 }

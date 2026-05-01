@@ -3,8 +3,6 @@
 import { useState } from "react";
 import type { Activity } from "@/types";
 import { useTimer } from "@/hooks/useTimer";
-import { showHotToast } from "@/lib/toast";
-
 
 type TimerHook = ReturnType<typeof useTimer>;
 
@@ -40,27 +38,23 @@ export default function TimerWidget({ activities, timer, onSaved }: Props) {
     const result = await stop();
     setSaving(false);
 
-    if (result?.id) {
-      onSaved();
-    }
+    if (result?.id) onSaved();
   }
 
   function handleStartPause() {
     if (!canStart) return;
-
-    if (isRunning) pause();
-    else start(timerState.activityId!);
+    isRunning ? pause() : start(timerState.activityId!);
   }
 
   return (
     <div className="space-y-4">
-      {/* SECTION LABEL */}
-      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)] px-1">
+      {/* LABEL */}
+      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
         Timer
       </p>
 
       {/* ACTIVITY CHIPS */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {activities.map((a) => {
           const active = a.id === timerState.activityId;
 
@@ -68,7 +62,7 @@ export default function TimerWidget({ activities, timer, onSaved }: Props) {
             <button
               key={a.id}
               onClick={() => setActivity(a.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm whitespace-nowrap transition
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-medium whitespace-nowrap transition
                 ${
                   active
                     ? "bg-[var(--accent-soft)] border-[var(--accent)] text-[var(--accent)]"
@@ -86,17 +80,17 @@ export default function TimerWidget({ activities, timer, onSaved }: Props) {
         })}
       </div>
 
-      {/* MAIN CARD */}
-      <div className="glass-card overflow-hidden">
+      {/* CARD */}
+      <div className="glass-card rounded-2xl border border-[var(--border)] overflow-hidden">
         {/* HEADER */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border)]">
           <div className="flex items-center gap-3">
             <span
-              className="w-3 h-3 rounded-full"
+              className="w-2.5 h-2.5 rounded-full"
               style={{ background: selectedActivity?.color }}
             />
 
-            <span className="font-semibold text-base">
+            <span className="font-medium text-sm sm:text-base">
               {selectedActivity?.name || "Select Activity"}
             </span>
           </div>
@@ -118,11 +112,11 @@ export default function TimerWidget({ activities, timer, onSaved }: Props) {
           )}
         </div>
 
-        {/* TIMER DISPLAY */}
-        <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+        {/* TIMER */}
+        <div className="flex flex-col items-center justify-center py-8 sm:py-10 text-center">
           <div
-            className={`font-mono tracking-tight tabular-nums leading-none
-              text-5xl sm:text-6xl md:text-7xl font-light
+            className={`font-mono tabular-nums tracking-tight leading-none
+              text-6xl sm:text-7xl md:text-8xl font-light transition-colors
               ${
                 isRunning
                   ? "text-[var(--accent)]"
@@ -136,21 +130,17 @@ export default function TimerWidget({ activities, timer, onSaved }: Props) {
             {format(displaySeconds)}
           </div>
 
-          <div className="mt-2 text-sm text-[var(--text-muted)]">
-            {isRunning
-              ? "Recording..."
-              : hasTime
-                ? "Paused"
-                : "Ready to start"}
+          <div className="mt-2 text-xs sm:text-sm text-[var(--text-muted)]">
+            {isRunning ? "Recording..." : hasTime ? "Paused" : "Ready to start"}
           </div>
         </div>
 
         {/* ACTIONS */}
-        <div className="flex items-center justify-center gap-3 px-5 pb-5">
+        <div className="flex items-center justify-center gap-2.5 px-4 pb-4">
           {hasTime && !isRunning && (
             <button
               onClick={reset}
-              className="px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)]"
+              className="px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:bg-[var(--bg-elevated)] transition"
             >
               Reset
             </button>
@@ -160,7 +150,7 @@ export default function TimerWidget({ activities, timer, onSaved }: Props) {
             <button
               onClick={handleStop}
               disabled={saving || isRunning}
-              className="px-4 py-2 rounded-lg border border-[var(--border)] text-sm"
+              className="px-4 py-2 rounded-lg border border-[var(--border)] text-sm hover:bg-[var(--bg-elevated)] transition disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save"}
             </button>
@@ -169,13 +159,13 @@ export default function TimerWidget({ activities, timer, onSaved }: Props) {
           <button
             onClick={handleStartPause}
             disabled={!canStart}
-            className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition
               ${
                 isRunning
                   ? "bg-[var(--red)] text-white"
                   : canStart
-                    ? "bg-[var(--accent)] text-white"
-                    : "bg-[var(--bg-elevated)] text-[var(--text-muted)]"
+                    ? "bg-[var(--accent)] text-white hover:opacity-90"
+                    : "bg-[var(--bg-elevated)] text-[var(--text-muted)] cursor-not-allowed"
               }
             `}
           >

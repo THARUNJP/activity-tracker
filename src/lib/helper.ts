@@ -1,7 +1,10 @@
 import {
   Activity,
   ActivityTarget,
+  AnalyticsBucket,
+  AnalyticsPeriod,
   DashboardEntry,
+  DateRange,
   Target,
   TargetPeriod,
   TodaySummary,
@@ -135,4 +138,161 @@ export function targetProgress(
         new Date(e.start_time).getTime() >= periodStart,
     )
     .reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0);
+}
+
+// ---- ANALYTICS ----
+
+const MONTH_LABELS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function addDays(d: Date, days: number) {
+  const next = new Date(d);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+export function getRangeForPeriod(
+  period: AnalyticsPeriod,
+  custom?: DateRange,
+): DateRange {
+  const today = startOfToday();
+  switch (period) {
+    case "week":
+      return { start: startOfWeek(), end: addDays(startOfWeek(), 7) };
+    case "month": {
+      const start = startOfMonth();
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+      return { start, end };
+    }
+    case "year": {
+      const start = startOfYear();
+      const end = new Date(start);
+      end.setFullYear(end.getFullYear() + 1);
+      return { start, end };
+    }
+    case "custom":
+      return (
+        custom ?? { start: addDays(today, -6), end: addDays(today, 1) }
+      );
+  }
+}
+
+// Decide bucket granularity based on the range span
+function bucketGranularity(range: DateRange): "day" | "month" {
+  const days = Math.round(
+    (range.end.getTime() - range.start.getTime()) / 86400000,
+  );
+  return days > 90 ? "month" : "day";
+}
+
+function dayLabel(d: Date, totalDays: number): string {
+  if (totalDays <= 7) return DAY_LABELS[d.getDay()];
+  return String(d.getDate());
+}
+
+// Local-date keys keep bucket creation and entry assignment in the same TZ
+// (toISOString is UTC, which would shift entries to the wrong bucket for
+// users not on UTC).
+function dayKeyLocal(d: Date): string {
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function monthKeyLocal(d: Date): string {
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
+
+export function bucketEntries(
+  entries: DashboardEntry[],
+  range: DateRange,
+  activities: Activity[],
+): AnalyticsBucket[] {
+  const granularity = bucketGranularity(range);
+  const buckets: AnalyticsBucket[] = [];
+  const index = new Map<string, AnalyticsBucket>();
+
+  if (granularity === "day") {
+    const totalDays = Math.max(
+      1,
+      Math.round((range.end.getTime() - range.start.getTime()) / 86400000),
+    );
+    for (let i = 0; i < totalDays; i++) {
+      const d = addDays(range.start, i);
+      const bucket: AnalyticsBucket = {
+        label: dayLabel(d, totalDays),
+        total: 0,
+      };
+      activities.forEach((a) => (bucket[a.id] = 0));
+      buckets.push(bucket);
+      index.set(dayKeyLocal(d), bucket);
+    }
+  } else {
+    const cursor = new Date(range.start);
+    cursor.setDate(1);
+    while (cursor < range.end) {
+      const bucket: AnalyticsBucket = {
+        label: MONTH_LABELS[cursor.getMonth()],
+        total: 0,
+      };
+      activities.forEach((a) => (bucket[a.id] = 0));
+      buckets.push(bucket);
+      index.set(monthKeyLocal(cursor), bucket);
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+  }
+
+  for (const e of entries) {
+    const d = new Date(e.start_time);
+    if (d < range.start || d >= range.end) continue;
+    const key = granularity === "day" ? dayKeyLocal(d) : monthKeyLocal(d);
+    const bucket = index.get(key);
+    if (!bucket) continue;
+    const secs = e.duration_seconds ?? 0;
+    bucket.total = (bucket.total as number) + secs;
+    bucket[e.activity_id] = ((bucket[e.activity_id] as number) ?? 0) + secs;
+  }
+
+  return buckets;
+}
+
+export function totalInRange(
+  entries: DashboardEntry[],
+  range: DateRange,
+): number {
+  return entries
+    .filter((e) => {
+      const d = new Date(e.start_time);
+      return d >= range.start && d < range.end;
+    })
+    .reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0);
+}
+
+export function toDateInputValue(d: Date): string {
+  // Local-date YYYY-MM-DD — toISOString would shift across midnight TZs
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function fromDateInputValue(s: string): Date {
+  const [y, m, day] = s.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, day ?? 1);
+}
+
+// End-of-range stored as exclusive next-day midnight, but users pick the
+// inclusive last day in the date input.
+export function inclusiveEndDate(end: Date): Date {
+  const d = new Date(end);
+  d.setDate(d.getDate() - 1);
+  return d;
+}
+
+export function exclusiveEndDate(inclusive: Date): Date {
+  const d = new Date(inclusive);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 1);
+  return d;
 }

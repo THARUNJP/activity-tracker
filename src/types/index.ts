@@ -136,3 +136,20 @@ export interface DashboardClientProps {
   entriesYear: DashboardEntry[];
   targets: Target[];
 }
+
+// ---- ANALYTICS ----
+
+export type AnalyticsPeriod = "week" | "month" | "year" | "custom";
+
+export interface DateRange {
+  start: Date;
+  end: Date; // exclusive
+}
+
+// One row per bucket; keys are activity_id -> seconds plus a label
+export interface AnalyticsBucket {
+  label: string;
+  total: number;
+  // dynamic activity keys (e.g. "act_xyz": 3600)
+  [activityId: string]: number | string;
+}

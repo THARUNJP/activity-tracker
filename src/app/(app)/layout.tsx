@@ -16,17 +16,9 @@ export default async function Layout({ children }: LayoutProps) {
   if (!user) redirect("/auth");
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="min-h-screen flex">
       <Sidebar userEmail={user.email ?? ""} />
-      <main
-        style={{
-          flex: 1,
-          marginLeft: "240px",
-          padding: "32px",
-          maxWidth: "100%",
-          overflowX: "hidden",
-        }}
-      >
+      <main className="flex-1 w-full lg:ml-64 pt-14 lg:pt-0 overflow-x-hidden">
         {children}
       </main>
     </div>

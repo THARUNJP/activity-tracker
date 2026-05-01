@@ -78,7 +78,7 @@ export default function DashboardClient({
 
       <BreakdownSection summary={summary} activities={activities} />
 
-      <AnalyticsSection />
+      <AnalyticsSection entries={entries} activities={activities} />
 
       <ProductivitySection
         productiveSeconds={summary.productiveSeconds}

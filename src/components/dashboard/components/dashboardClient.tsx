@@ -11,6 +11,7 @@ import TodayStats from "./todayStats";
 import BreakdownSection from "./breakdownStats";
 import { TargetsSection } from "./targetSection";
 import { ProductivitySection } from "./productivity";
+import { AnalyticsSection } from "./analytics";
 
 export default function DashboardClient({
   userId,
@@ -76,6 +77,8 @@ export default function DashboardClient({
       <TodayStats summary={summary} />
 
       <BreakdownSection summary={summary} activities={activities} />
+
+      <AnalyticsSection />
 
       <ProductivitySection
         productiveSeconds={summary.productiveSeconds}

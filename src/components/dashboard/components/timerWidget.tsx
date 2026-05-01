@@ -43,7 +43,12 @@ export default function TimerWidget({ activities, timer, onSaved }: Props) {
 
   function handleStartPause() {
     if (!canStart) return;
-    isRunning ? pause() : start(timerState.activityId!);
+
+    if (isRunning) {
+      pause();
+    } else {
+      start(timerState.activityId!);
+    }
   }
 
   return (

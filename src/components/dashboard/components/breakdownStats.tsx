@@ -14,7 +14,7 @@ export default function BreakdownSection({
     return (
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-[var(--text-secondary)]">
-          Today's breakdown
+          Today&apos;s breakdown
         </h2>
 
         <div className="glass-card p-5 text-sm text-[var(--text-muted)]">
@@ -28,7 +28,7 @@ export default function BreakdownSection({
     <section className="space-y-3">
       {/* Title */}
       <h2 className="text-sm font-semibold text-[var(--text-primary)]">
-        Today's breakdown
+        Today&apos;s breakdown
       </h2>
 
       <div className="glass-card p-4 space-y-4">

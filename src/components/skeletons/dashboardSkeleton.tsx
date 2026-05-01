@@ -26,28 +26,6 @@ export function DashboardSkeleton() {
         <Skeleton className="h-4 w-56" />
       </div>
 
-      {/* Timer card */}
-      <div className="glass-card p-6 space-y-5">
-        <div className="flex flex-col items-center gap-3">
-          <Skeleton className="h-3 w-16" />
-          <Skeleton className="h-14 w-64" />
-          <Skeleton className="h-7 w-32 rounded-full" />
-        </div>
-        <div className="flex gap-2 overflow-hidden">
-          {[80, 96, 88, 104, 72].map((w, i) => (
-            <Skeleton
-              key={i}
-              className="h-7 rounded-full shrink-0"
-              style={{ width: `${w}px` }}
-            />
-          ))}
-        </div>
-        <div className="flex justify-center gap-2.5">
-          <Skeleton className="h-10 w-20 rounded-lg" />
-          <Skeleton className="h-10 w-28 rounded-xl" />
-        </div>
-      </div>
-
       {/* Today stats */}
       <section>
         <SectionTitle width="w-12" />

@@ -1,5 +1,9 @@
 import { AnalyticsPeriod, DateRange } from "@/types";
-import { exclusiveEndDate, inclusiveEndDate } from "@/lib/helper";
+import {
+  exclusiveEndDate,
+  formatDateShort,
+  inclusiveEndDate,
+} from "@/lib/helper";
 import { DatePopover } from "./datePopover";
 
 const PERIODS: { id: AnalyticsPeriod; label: string }[] = [
@@ -144,16 +148,9 @@ export function AnalyticsControls({
         </div>
       ) : (
         <div className="text-[11px] text-[var(--text-muted)]">
-          {range.start.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-          })}
+          {formatDateShort(range.start)}
           {" — "}
-          {inclusiveEndDate(range.end).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
+          {formatDateShort(inclusiveEndDate(range.end), true)}
         </div>
       )}
     </div>

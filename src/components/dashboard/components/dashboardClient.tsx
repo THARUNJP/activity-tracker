@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { DashboardClientProps, DashboardEntry } from "@/types";
 import { useTimer } from "@/hooks/useTimer";
 import { createClient } from "@/supabase/client";
-import { startOfYear, summarizeToday, targetProgress } from "@/lib/helper";
+import {
+  formatDateLong,
+  startOfYear,
+  summarizeToday,
+  targetProgress,
+} from "@/lib/helper";
 import { showHotToast } from "@/lib/toast";
 import TimerWidget from "./timerWidget";
 import TodayStats from "./todayStats";
@@ -59,11 +64,7 @@ export default function DashboardClient({
     [targets, entries],
   );
 
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+  const today = formatDateLong(new Date());
 
   return (
     <div className="animate-fade-in max-w-[900px] mx-auto w-full px-4 py-6 space-y-6">

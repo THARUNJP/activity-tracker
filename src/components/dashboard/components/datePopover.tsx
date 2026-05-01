@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { Calendar } from "lucide-react";
+import { formatDateShort } from "@/lib/helper";
 
 export function DatePopover({
   value,
@@ -108,13 +109,7 @@ export function DatePopover({
         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--accent)] transition text-sm text-[var(--text-primary)]"
       >
         <Calendar size={14} className="text-[var(--text-muted)] shrink-0" />
-        <span className="truncate">
-          {value.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </span>
+        <span className="truncate">{formatDateShort(value, true)}</span>
       </button>
 
       {typeof document !== "undefined" && popover

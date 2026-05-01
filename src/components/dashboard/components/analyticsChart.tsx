@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -72,9 +73,19 @@ export function AnalyticsChart({ buckets, activities }: Props) {
     buckets.some((b) => Number(b[a.id] ?? 0) > 0),
   );
 
+  // ResponsiveContainer measures its parent on first render; during SSR /
+  // hydration there's no layout yet, which produces width(-1) warnings.
+  // Defer the chart to the client.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return <div className="h-56 sm:h-64 w-full" aria-hidden />;
+  }
+
   return (
-    <div className="h-56 sm:h-64 w-full">
-      <ResponsiveContainer>
+    <div className="h-56 sm:h-64 w-full" style={{ minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={buckets}
           margin={{ top: 4, right: 4, bottom: 0, left: -16 }}

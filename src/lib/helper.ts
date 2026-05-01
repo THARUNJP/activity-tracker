@@ -50,6 +50,32 @@ export function formatTimer(seconds: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+// Deterministic locale-independent date formatters.
+// toLocaleDateString varies between Node (server) and the browser, which
+// triggers hydration mismatches. These build the string by hand instead.
+const SHORT_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+const LONG_MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+const LONG_WEEKDAYS = [
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+];
+
+export function formatDateShort(d: Date, withYear = false): string {
+  const base = `${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}`;
+  return withYear ? `${base}, ${d.getFullYear()}` : base;
+}
+
+export function formatDateLong(d: Date): string {
+  return `${LONG_WEEKDAYS[d.getDay()]}, ${LONG_MONTHS[d.getMonth()]} ${d.getDate()}`;
+}
+
 // ---- DASHBOARD AGGREGATION ----
 
 export function startOfToday(): Date {

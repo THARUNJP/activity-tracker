@@ -1,11 +1,6 @@
-import { useMemo } from "react";
 import { AnalyticsPeriod, DateRange } from "@/types";
-import {
-  exclusiveEndDate,
-  fromDateInputValue,
-  inclusiveEndDate,
-  toDateInputValue,
-} from "@/lib/helper";
+import { exclusiveEndDate, inclusiveEndDate } from "@/lib/helper";
+import { DateRangePopover } from "./dateRangePopover";
 
 const PERIODS: { id: AnalyticsPeriod; label: string }[] = [
   { id: "week", label: "Week" },
@@ -14,53 +9,33 @@ const PERIODS: { id: AnalyticsPeriod; label: string }[] = [
   { id: "custom", label: "Custom" },
 ];
 
+type Mode = "single" | "range";
+
 export function AnalyticsControls({
   period,
   setPeriod,
   range,
   customRange,
   setCustomRange,
+  customMode,
+  setCustomMode,
 }: {
   period: AnalyticsPeriod;
   setPeriod: (p: AnalyticsPeriod) => void;
   range: DateRange;
   customRange: DateRange;
   setCustomRange: (r: DateRange) => void;
+  customMode: Mode;
+  setCustomMode: (m: Mode) => void;
 }) {
-  const startStr = toDateInputValue(customRange.start);
-  const endInclusiveStr = toDateInputValue(inclusiveEndDate(customRange.end));
-  const isSingleDay = useMemo(
-    () => startStr === endInclusiveStr,
-    [startStr, endInclusiveStr],
-  );
-
-  function setStart(value: string) {
-    const start = fromDateInputValue(value);
-    const endIncl = isSingleDay ? start : inclusiveEndDate(customRange.end);
-    const safeEndIncl = endIncl < start ? start : endIncl;
-    setCustomRange({ start, end: exclusiveEndDate(safeEndIncl) });
-  }
-
-  function setEndInclusive(value: string) {
-    const endIncl = fromDateInputValue(value);
-    const start = endIncl < customRange.start ? endIncl : customRange.start;
-    setCustomRange({ start, end: exclusiveEndDate(endIncl) });
-  }
-
-  function setSingleDay(value: string) {
-    const d = fromDateInputValue(value);
-    setCustomRange({ start: d, end: exclusiveEndDate(d) });
-  }
-
-  function toggleSingleDay(next: boolean) {
-    if (next) {
-      // collapse to single day = start
+  function switchMode(next: Mode) {
+    if (next === customMode) return;
+    if (next === "single") {
       setCustomRange({
         start: customRange.start,
         end: exclusiveEndDate(customRange.start),
       });
     } else {
-      // expand to a 7-day window ending today (or just open second input)
       const endIncl = new Date(customRange.start);
       endIncl.setDate(endIncl.getDate() + 6);
       setCustomRange({
@@ -68,6 +43,7 @@ export function AnalyticsControls({
         end: exclusiveEndDate(endIncl),
       });
     }
+    setCustomMode(next);
   }
 
   return (
@@ -91,12 +67,12 @@ export function AnalyticsControls({
 
       {period === "custom" ? (
         <div className="space-y-2">
-          {/* Single day vs range toggle */}
+          {/* Mode toggle */}
           <div className="flex gap-1 text-xs">
             <button
-              onClick={() => toggleSingleDay(true)}
+              onClick={() => switchMode("single")}
               className={`px-3 py-1 rounded-md font-medium transition ${
-                isSingleDay
+                customMode === "single"
                   ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               }`}
@@ -104,9 +80,9 @@ export function AnalyticsControls({
               Single day
             </button>
             <button
-              onClick={() => toggleSingleDay(false)}
+              onClick={() => switchMode("range")}
               className={`px-3 py-1 rounded-md font-medium transition ${
-                !isSingleDay
+                customMode === "range"
                   ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               }`}
@@ -115,46 +91,11 @@ export function AnalyticsControls({
             </button>
           </div>
 
-          {isSingleDay ? (
-            <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
-                Date
-              </label>
-              <input
-                type="date"
-                value={startStr}
-                onChange={(e) => setSingleDay(e.target.value)}
-                className="input-field text-sm w-full"
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
-                  From
-                </label>
-                <input
-                  type="date"
-                  value={startStr}
-                  max={endInclusiveStr}
-                  onChange={(e) => setStart(e.target.value)}
-                  className="input-field text-sm w-full"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
-                  To
-                </label>
-                <input
-                  type="date"
-                  value={endInclusiveStr}
-                  min={startStr}
-                  onChange={(e) => setEndInclusive(e.target.value)}
-                  className="input-field text-sm w-full"
-                />
-              </div>
-            </div>
-          )}
+          <DateRangePopover
+            mode={customMode}
+            range={customRange}
+            onChange={setCustomRange}
+          />
         </div>
       ) : (
         <div className="text-[11px] text-[var(--text-muted)]">

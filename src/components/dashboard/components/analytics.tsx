@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Activity, AnalyticsPeriod, DashboardEntry, DateRange } from "@/types";
 import {
+  bucketByActivity,
   bucketEntries,
   formatDuration,
   getRangeForPeriod,
@@ -31,15 +32,21 @@ export function AnalyticsSection({
   const [customRange, setCustomRange] = useState<DateRange>(
     defaultCustomRange(),
   );
+  const [customMode, setCustomMode] = useState<"single" | "range">("range");
 
   const range = useMemo(
     () => getRangeForPeriod(period, customRange),
     [period, customRange],
   );
 
+  const isSingleDay = period === "custom" && customMode === "single";
+
   const buckets = useMemo(
-    () => bucketEntries(entries, range, activities),
-    [entries, range, activities],
+    () =>
+      isSingleDay
+        ? bucketByActivity(entries, range, activities)
+        : bucketEntries(entries, range, activities),
+    [isSingleDay, entries, range, activities],
   );
 
   const total = useMemo(() => totalInRange(entries, range), [entries, range]);
@@ -65,6 +72,8 @@ export function AnalyticsSection({
           range={range}
           customRange={customRange}
           setCustomRange={setCustomRange}
+          customMode={customMode}
+          setCustomMode={setCustomMode}
         />
 
         {total === 0 ? (

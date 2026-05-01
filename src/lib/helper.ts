@@ -257,6 +257,40 @@ export function bucketEntries(
   return buckets;
 }
 
+// One bar per activity (used for single-day custom view).
+// Each bucket has exactly one non-zero activity key so the existing stacked
+// chart renders each bar in the activity's own color.
+export function bucketByActivity(
+  entries: DashboardEntry[],
+  range: DateRange,
+  activities: Activity[],
+): AnalyticsBucket[] {
+  const totals = new Map<string, number>();
+  for (const e of entries) {
+    const d = new Date(e.start_time);
+    if (d < range.start || d >= range.end) continue;
+    totals.set(
+      e.activity_id,
+      (totals.get(e.activity_id) ?? 0) + (e.duration_seconds ?? 0),
+    );
+  }
+
+  return activities
+    .filter((a) => (totals.get(a.id) ?? 0) > 0)
+    .map((a) => {
+      const seconds = totals.get(a.id) ?? 0;
+      const bucket: AnalyticsBucket = {
+        label: `${a.icon} ${a.name}`,
+        total: seconds,
+      };
+      activities.forEach((other) => {
+        bucket[other.id] = other.id === a.id ? seconds : 0;
+      });
+      return bucket;
+    })
+    .sort((a, b) => Number(b.total) - Number(a.total));
+}
+
 export function totalInRange(
   entries: DashboardEntry[],
   range: DateRange,

@@ -9,6 +9,7 @@ import { getActivity } from "@/lib/helper";
 import { ScheduleRow } from "./scheduleRow";
 import { ScheduleForm, ScheduleFormState } from "./scheduleForm";
 import { SchedulesHeader } from "./schedulesHeader";
+import { showHotToast } from "@/lib/toast";
 
 const initialFormState = (firstActivityId: string): ScheduleFormState => ({
   activityId: firstActivityId,
@@ -58,12 +59,14 @@ export default function SchedulesClient({
 
     if (err) {
       setError(err.message);
+      showHotToast(err.message, "error");
     } else if (data) {
       setSchedules((prev) =>
         [...prev, data].sort((a, b) =>
           a.start_time.localeCompare(b.start_time)
         )
       );
+      showHotToast("Schedule created", "success");
       setForm(initialFormState(activities[0]?.id || ""));
       setShowForm(false);
     }
@@ -72,6 +75,9 @@ export default function SchedulesClient({
   }
 
   async function deleteSchedule(id: string) {
+    const previous = schedules;
+    setSchedules((prev) => prev.filter((s) => s.id !== id));
+
     const { error } = await supabase
       .from("default_schedules")
       .delete()
@@ -79,11 +85,12 @@ export default function SchedulesClient({
       .eq("user_id", userId);
 
     if (error) {
-      console.error(error.message);
+      setSchedules(previous);
+      showHotToast(error.message, "error");
       return;
     }
 
-    setSchedules((prev) => prev.filter((s) => s.id !== id));
+    showHotToast("Schedule deleted", "success");
   }
 
   const noActivities = activities.length === 0;

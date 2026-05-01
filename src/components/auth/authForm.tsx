@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/supabase/client";
-import { Clock } from "lucide-react";
+import { showHotToast } from "@/lib/toast";
 
 export default function AuthForm() {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -15,7 +15,7 @@ export default function AuthForm() {
   const router = useRouter();
   const supabase = createClient();
 
-  async function handleSubmit(e: React.SubmitEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -28,7 +28,9 @@ export default function AuthForm() {
       });
       if (error) {
         setError(error.message);
+        showHotToast(error.message, "error");
       } else {
+        showHotToast("Welcome back!", "success");
         router.push("/dashboard");
         router.refresh();
       }
@@ -36,8 +38,10 @@ export default function AuthForm() {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) {
         setError(error.message);
+        showHotToast(error.message, "error");
       } else {
         setMessage("Account created! You can now log in.");
+        showHotToast("Account created — sign in to continue", "success");
         setMode("login");
       }
     }
@@ -48,7 +52,6 @@ export default function AuthForm() {
     <div className="w-full max-w-md mx-auto">
       {/* Logo */}
       <div className="text-center mb-12">
-        {/* <div className="logo-box"><Clock/></div> */}
         <h1 className="text-2xl font-extrabold tracking-tight pt-4 mb-2">
           Activity Tracker
         </h1>

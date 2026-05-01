@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { TimerState } from "@/types";
 import { createClient } from "@/supabase/client";
+import { ulid } from "ulid";
 
 const STORAGE_KEY = "activity-tracker-timer";
 
@@ -95,8 +96,13 @@ export function useTimer(userId: string | undefined) {
     saveTimerState(newState);
   }, [timerState]);
 
-  const stop = useCallback(async (): Promise<string | null> => {
-    if (!userId || !timerState.activityId) return null;
+  const stop = useCallback(async (): Promise<{
+    id: string | null;
+    error: string | null;
+    skippedShort: boolean;
+  }> => {
+    if (!userId || !timerState.activityId)
+      return { id: null, error: "No activity selected", skippedShort: false };
 
     const now = new Date();
     let startTime: Date;
@@ -113,45 +119,39 @@ export function useTimer(userId: string | undefined) {
       startTime = new Date(now.getTime() - durationSeconds * 1000);
     }
 
+    const resetState: TimerState = {
+      isRunning: false,
+      startTime: null,
+      elapsed: 0,
+      activityId: null,
+    };
+
     if (durationSeconds < 5) {
-      // Too short, just reset
-      const resetState: TimerState = {
-        isRunning: false,
-        startTime: null,
-        elapsed: 0,
-        activityId: null,
-      };
       setTimerState(resetState);
       clearTimerState();
-      return null;
+      return { id: null, error: null, skippedShort: true };
     }
 
     const { data, error } = await supabase
       .from("time_entries")
       .insert({
+        id: ulid(),
         user_id: userId,
         activity_id: timerState.activityId,
         start_time: startTime.toISOString(),
         end_time: now.toISOString(),
-        duration: durationSeconds,
-        is_auto_waste: false,
+        source: "manual",
       })
       .select()
       .single();
 
-    if (!error && data) {
-      const resetState: TimerState = {
-        isRunning: false,
-        startTime: null,
-        elapsed: 0,
-        activityId: null,
-      };
-      setTimerState(resetState);
-      clearTimerState();
-      return data.id;
+    if (error || !data) {
+      return { id: null, error: error?.message || "Save failed", skippedShort: false };
     }
 
-    return null;
+    setTimerState(resetState);
+    clearTimerState();
+    return { id: data.id, error: null, skippedShort: false };
   }, [timerState, userId, supabase]);
 
   const reset = useCallback(() => {

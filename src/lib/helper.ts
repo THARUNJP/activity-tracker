@@ -1,4 +1,11 @@
-import { ActivityTarget } from "@/types";
+import {
+  Activity,
+  ActivityTarget,
+  DashboardEntry,
+  Target,
+  TargetPeriod,
+  TodaySummary,
+} from "@/types";
 
 // ---- HELPERS ----
 export const getActivity = (id: string, activities: ActivityTarget[]) =>
@@ -38,4 +45,94 @@ export function formatTimer(seconds: number): string {
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+// ---- DASHBOARD AGGREGATION ----
+
+export function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+// Monday as week start
+export function startOfWeek(): Date {
+  const d = startOfToday();
+  const day = d.getDay(); // 0=Sun..6=Sat
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+export function startOfMonth(): Date {
+  const d = startOfToday();
+  d.setDate(1);
+  return d;
+}
+
+export function startOfYear(): Date {
+  const d = startOfToday();
+  d.setMonth(0, 1);
+  return d;
+}
+
+const PERIOD_START: Record<TargetPeriod, () => Date> = {
+  daily: startOfToday,
+  weekly: startOfWeek,
+  monthly: startOfMonth,
+  yearly: startOfYear,
+};
+
+export function summarizeToday(
+  entries: DashboardEntry[],
+  activities: Activity[],
+): TodaySummary {
+  const todayStart = startOfToday().getTime();
+  const today = entries.filter(
+    (e) => new Date(e.start_time).getTime() >= todayStart,
+  );
+
+  const productivityById = new Map(
+    activities.map((a) => [a.id, a.productivity]),
+  );
+
+  const breakdownMap = new Map<string, number>();
+  let total = 0;
+  let productive = 0;
+  let leisure = 0;
+
+  for (const e of today) {
+    const secs = e.duration_seconds ?? 0;
+    total += secs;
+    breakdownMap.set(
+      e.activity_id,
+      (breakdownMap.get(e.activity_id) ?? 0) + secs,
+    );
+    if (productivityById.get(e.activity_id) === "productive") productive += secs;
+    else leisure += secs;
+  }
+
+  return {
+    totalSeconds: total,
+    productiveSeconds: productive,
+    leisureSeconds: leisure,
+    sessions: today.length,
+    breakdown: [...breakdownMap.entries()]
+      .map(([activityId, seconds]) => ({ activityId, seconds }))
+      .sort((a, b) => b.seconds - a.seconds),
+  };
+}
+
+export function targetProgress(
+  target: Target,
+  entries: DashboardEntry[],
+): number {
+  const periodStart = PERIOD_START[target.period]().getTime();
+  return entries
+    .filter(
+      (e) =>
+        e.activity_id === target.activity_id &&
+        new Date(e.start_time).getTime() >= periodStart,
+    )
+    .reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0);
 }

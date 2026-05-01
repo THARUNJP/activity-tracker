@@ -9,6 +9,8 @@ import {
   Target,
   LogOut,
 } from "lucide-react";
+import { createClient } from "@/supabase/client";
+import { showHotToast } from "@/lib/toast";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -24,6 +26,18 @@ const navItems = [
 export default function Sidebar({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const supabase = createClient();
+
+  async function handleSignOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      showHotToast(error.message, "error");
+      return;
+    }
+    showHotToast("Signed out", "success");
+    router.push("/auth");
+    router.refresh();
+  }
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex flex-col px-4 py-6 z-50">
@@ -77,7 +91,7 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
         </div>
 
         <button
-          onClick={() => router.push("/auth")}
+          onClick={handleSignOut}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-secondary hover:bg-hover hover:text-primary transition"
         >
           <LogOut size={18} />

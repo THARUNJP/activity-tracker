@@ -109,24 +109,30 @@ export interface ScheduleProps {
 
 
 // types/dashboard.ts
-export type DashboardData = {
-  today: {
-    totalSeconds: number;
-    productiveSeconds: number;
-    sessions: number;
-    longestSession: {
-      seconds: number;
-      activityId: string;
-    };
-    breakdown: {
-      activityId: string;
-      seconds: number;
-    }[];
-  };
+export interface DashboardEntry {
+  id: string;
+  activity_id: string;
+  start_time: string;
+  end_time: string;
+  duration_seconds: number;
+}
 
-  targets: {
-    activityId: string;
-    targetSeconds: number;
-    achievedSeconds: number;
-  }[];
-};
+export interface TodaySummary {
+  totalSeconds: number;
+  productiveSeconds: number;
+  leisureSeconds: number;
+  sessions: number;
+  breakdown: { activityId: string; seconds: number }[];
+}
+
+export interface TargetProgress {
+  target: Target;
+  achievedSeconds: number;
+}
+
+export interface DashboardClientProps {
+  userId: string;
+  activities: Activity[];
+  entriesYear: DashboardEntry[];
+  targets: Target[];
+}

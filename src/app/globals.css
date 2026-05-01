@@ -175,5 +175,13 @@ html {
   .animate-fade-in {
     animation: fade-in 0.4s ease-out;
   }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
 

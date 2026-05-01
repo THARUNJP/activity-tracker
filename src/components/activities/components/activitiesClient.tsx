@@ -6,6 +6,7 @@ import { createClient } from "@/supabase/client";
 import { COLORS, ICONS } from "@/lib/constant";
 import { ActivityRow } from "./activityRow";
 import { ulid } from "ulid";
+import { showHotToast } from "@/lib/toast";
 
 export default function ActivitiesClient({
   userId,
@@ -52,8 +53,10 @@ export default function ActivitiesClient({
 
     if (err) {
       setError(err.message);
+      showHotToast(err.message, "error");
     } else if (data) {
       setActivities((prev) => [...prev, data]);
+      showHotToast(`"${data.name}" created`, "success");
 
       // reset form completely
       setName("");
@@ -67,6 +70,10 @@ export default function ActivitiesClient({
   }
 
   async function deleteActivity(id: string) {
+    const previous = activities;
+    const removed = previous.find((a) => a.id === id);
+    setActivities((prev) => prev.filter((a) => a.id !== id));
+
     const { error } = await supabase
       .from("activities")
       .delete()
@@ -74,11 +81,12 @@ export default function ActivitiesClient({
       .eq("user_id", userId);
 
     if (error) {
-      console.error(error.message);
+      setActivities(previous);
+      showHotToast(error.message, "error");
       return;
     }
 
-    setActivities((prev) => prev.filter((a) => a.id !== id));
+    showHotToast(removed ? `"${removed.name}" deleted` : "Activity deleted", "success");
   }
 
   return (

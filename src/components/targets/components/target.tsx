@@ -7,6 +7,7 @@ import { ulid } from "ulid";
 import { TargetPeriod, TargetProps } from "@/types";
 import { formatDuration, getActivity } from "@/lib/helper";
 import { TargetRow } from "./targetRow";
+import { showHotToast } from "@/lib/toast";
 
 export default function TargetsClient({
   userId,
@@ -58,8 +59,10 @@ export default function TargetsClient({
 
     if (err) {
       setError(err.message);
+      showHotToast(err.message, "error");
     } else if (data) {
       setTargets((prev) => [...prev, data]);
+      showHotToast("Target created", "success");
 
       // reset
       setActivityId(activities[0]?.id || "");
@@ -74,6 +77,9 @@ export default function TargetsClient({
 
   // ---- DELETE ----
   async function deleteTarget(id: string) {
+    const previous = targets;
+    setTargets((prev) => prev.filter((t) => t.id !== id));
+
     const { error } = await supabase
       .from("activity_targets")
       .delete()
@@ -81,11 +87,12 @@ export default function TargetsClient({
       .eq("user_id", userId);
 
     if (error) {
-      console.error(error.message);
+      setTargets(previous);
+      showHotToast(error.message, "error");
       return;
     }
 
-    setTargets((prev) => prev.filter((t) => t.id !== id));
+    showHotToast("Target deleted", "success");
   }
 
   const noActivities = activities.length === 0;

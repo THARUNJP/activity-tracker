@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  ChartBar,
 } from "lucide-react";
 import { createClient } from "@/supabase/client";
 import { showHotToast } from "@/lib/toast";
@@ -24,6 +25,7 @@ const navItems = [
     label: "Default Schedules",
     icon: CalendarClock,
   },
+  { href: "/plan", label: "Plan chart", icon: ChartBar },
 ];
 
 export default function Sidebar({ userEmail }: { userEmail: string }) {

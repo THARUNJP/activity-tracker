@@ -25,7 +25,7 @@ const navItems = [
     label: "Default Schedules",
     icon: CalendarClock,
   },
-  { href: "/plan", label: "Plan chart", icon: ChartBar },
+  { href: "/plan", label: "Plan", icon: ChartBar },
 ];
 
 export default function Sidebar({ userEmail }: { userEmail: string }) {

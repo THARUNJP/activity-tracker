@@ -34,6 +34,8 @@ interface Block {
   activity: ActivityTarget;
   top: number;
   height: number;
+  // For wrap-around blocks, segIndex 0 is pre-midnight, 1 is post-midnight.
+  segIndex: 0 | 1;
 }
 
 export function PlanTimeline({
@@ -53,20 +55,41 @@ export function PlanTimeline({
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const blocks = useMemo<Block[]>(() => {
-    return plans
-      .map((p) => {
-        const activity = getActivity(p.activity_id, activities);
-        if (!activity) return null;
-        const startH = timeToHours(p.start_time);
-        const endH = timeToHours(p.end_time);
-        return {
+    const out: Block[] = [];
+    for (const p of plans) {
+      const activity = getActivity(p.activity_id, activities);
+      if (!activity) continue;
+      const startH = timeToHours(p.start_time);
+      const endH = timeToHours(p.end_time);
+      if (endH > startH) {
+        out.push({
           plan: p,
           activity,
           top: startH * HOUR_HEIGHT,
           height: Math.max((endH - startH) * HOUR_HEIGHT, 26),
-        } as Block;
-      })
-      .filter((b): b is Block => b !== null);
+          segIndex: 0,
+        });
+      } else {
+        // Wraps past midnight — render as two segments.
+        out.push({
+          plan: p,
+          activity,
+          top: startH * HOUR_HEIGHT,
+          height: Math.max((TOTAL_HOURS - startH) * HOUR_HEIGHT, 26),
+          segIndex: 0,
+        });
+        if (endH > 0) {
+          out.push({
+            plan: p,
+            activity,
+            top: 0,
+            height: Math.max(endH * HOUR_HEIGHT, 26),
+            segIndex: 1,
+          });
+        }
+      }
+    }
+    return out;
   }, [plans, activities]);
 
   // On first mount, scroll to the earliest block (or 6 AM by default).
@@ -122,7 +145,7 @@ export function PlanTimeline({
             const isSelected = selectedId === b.plan.id;
             return (
               <button
-                key={b.plan.id}
+                key={`${b.plan.id}-${b.segIndex}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelect(b.plan);

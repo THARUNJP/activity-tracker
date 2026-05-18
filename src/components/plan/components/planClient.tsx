@@ -69,8 +69,8 @@ export default function PlanClient({
     e.preventDefault();
 
     if (!form.activityId) return setError("Please pick an activity");
-    if (form.endTime <= form.startTime)
-      return setError("End time must be after start time");
+    if (form.endTime === form.startTime)
+      return setError("Start and end time can't be the same");
 
     setSaving(true);
     setError("");

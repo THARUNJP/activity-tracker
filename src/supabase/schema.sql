@@ -204,9 +204,6 @@ create table public.plans (
   end_time time not null,
 
   created_at timestamptz default now(),
-
-  constraint valid_plan_time
-    check (end_time > start_time)
 );
 
 create index idx_plans_user

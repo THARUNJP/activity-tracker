@@ -6,26 +6,46 @@
 -- ENUMS
 -- =========================
 create type public.activity_type as enum ('manual', 'system');
-create type public.productivity_type as enum ('productive', 'leisure');
-create type public.target_period as enum ('daily', 'weekly', 'monthly', 'yearly');
+
+create type public.productivity_type as enum (
+  'productive',
+  'leisure'
+);
+
+create type public.target_period as enum (
+  'daily',
+  'weekly',
+  'monthly',
+  'yearly'
+);
 
 -- =========================
 -- ACTIVITIES TABLE
 -- =========================
 create table public.activities (
   id varchar(26) primary key not null,
+
   constraint activities_valid_ulid
     check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
 
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null
+    references auth.users(id) on delete cascade,
 
   name text not null,
-  type public.activity_type not null default 'manual',
-  color text not null default '#7c6af7',
-  icon text not null default '●',
+
+  type public.activity_type not null
+    default 'manual',
+
+  color text not null
+    default '#7c6af7',
+
+  icon text not null
+    default '●',
+
   productivity public.productivity_type not null,
 
   is_active boolean default true,
+
   created_at timestamptz default now()
 );
 
@@ -40,18 +60,23 @@ on public.activities(user_id);
 -- =========================
 create table public.time_entries (
   id varchar(26) primary key not null,
+
   constraint time_entries_valid_ulid
     check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
 
-  user_id uuid not null references auth.users(id) on delete cascade,
-  activity_id varchar(26) not null references public.activities(id) on delete cascade,
+  user_id uuid not null
+    references auth.users(id) on delete cascade,
+
+  activity_id varchar(26) not null
+    references public.activities(id) on delete cascade,
 
   start_time timestamptz not null,
+
   end_time timestamptz,
 
   duration_seconds int generated always as (
-    case 
-      when end_time is not null 
+    case
+      when end_time is not null
       then extract(epoch from (end_time - start_time))::int
       else null
     end
@@ -62,7 +87,10 @@ create table public.time_entries (
   created_at timestamptz default now(),
 
   constraint valid_time
-    check (end_time is null or end_time > start_time)
+    check (
+      end_time is null
+      or end_time > start_time
+    )
 );
 
 create index idx_time_entries_user
@@ -86,13 +114,18 @@ where end_time is null;
 -- =========================
 create table public.default_schedules (
   id varchar(26) primary key not null,
+
   constraint schedules_valid_ulid
     check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
 
-  user_id uuid not null references auth.users(id) on delete cascade,
-  activity_id varchar(26) not null references public.activities(id) on delete cascade,
+  user_id uuid not null
+    references auth.users(id) on delete cascade,
+
+  activity_id varchar(26) not null
+    references public.activities(id) on delete cascade,
 
   start_time time not null,
+
   end_time time not null,
 
   days_of_week int[] not null,
@@ -107,12 +140,17 @@ create index idx_default_schedules_user
 on public.default_schedules(user_id);
 
 -- =========================
--- DAILY SUMMARY
+-- DAILY ACTIVITY SUMMARY
 -- =========================
 create table public.daily_activity_summary (
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null
+    references auth.users(id) on delete cascade,
+
   date date not null,
-  activity_id varchar(26) not null references public.activities(id) on delete cascade,
+
+  activity_id varchar(26) not null
+    references public.activities(id) on delete cascade,
+
   total_duration_seconds int not null,
 
   primary key (user_id, date, activity_id)
@@ -123,13 +161,18 @@ create table public.daily_activity_summary (
 -- =========================
 create table public.activity_targets (
   id varchar(26) primary key not null,
+
   constraint targets_valid_ulid
     check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
 
-  user_id uuid not null references auth.users(id) on delete cascade,
-  activity_id varchar(26) not null references public.activities(id) on delete cascade,
+  user_id uuid not null
+    references auth.users(id) on delete cascade,
+
+  activity_id varchar(26) not null
+    references public.activities(id) on delete cascade,
 
   period public.target_period not null,
+
   target_seconds int not null,
 
   created_at timestamptz default now()
@@ -142,39 +185,107 @@ create unique index unique_activity_target
 on public.activity_targets(user_id, activity_id, period);
 
 -- =========================
--- RLS
+-- PLANS TABLE
 -- =========================
-alter table public.activities enable row level security;
-alter table public.time_entries enable row level security;
-alter table public.default_schedules enable row level security;
-alter table public.daily_activity_summary enable row level security;
-alter table public.activity_targets enable row level security;
+create table public.plans (
+  id varchar(26) primary key not null,
+
+  constraint plans_valid_ulid
+    check (id ~ '^[0-9A-HJKMNP-TV-Z]{26}$'),
+
+  user_id uuid not null
+    references auth.users(id) on delete cascade,
+
+  activity_id varchar(26) not null
+    references public.activities(id) on delete cascade,
+
+  start_time time not null,
+
+  end_time time not null,
+
+  created_at timestamptz default now(),
+
+  constraint valid_plan_time
+    check (end_time > start_time)
+);
+
+create index idx_plans_user
+on public.plans(user_id);
+
+-- =========================
+-- ENABLE RLS
+-- =========================
+alter table public.activities
+enable row level security;
+
+alter table public.time_entries
+enable row level security;
+
+alter table public.default_schedules
+enable row level security;
+
+alter table public.daily_activity_summary
+enable row level security;
+
+alter table public.activity_targets
+enable row level security;
+
+alter table public.plans
+enable row level security;
+
+-- =========================
+-- RLS POLICIES
+-- =========================
 
 -- activities
 create policy "own activities"
-on public.activities for all
+on public.activities
+for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
 -- time entries
 create policy "own time entries"
-on public.time_entries for all
+on public.time_entries
+for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
 -- schedules
 create policy "own schedules"
-on public.default_schedules for all
+on public.default_schedules
+for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
 -- summary (read only)
 create policy "own summary"
-on public.daily_activity_summary for select
+on public.daily_activity_summary
+for select
 using (auth.uid() = user_id);
 
 -- targets
 create policy "own targets"
-on public.activity_targets for all
+on public.activity_targets
+for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
+
+-- plans
+create policy "own plans"
+on public.plans
+for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+-- =========================
+-- GRANTS
+-- =========================
+grant usage on schema public to anon;
+grant usage on schema public to authenticated;
+
+grant all on all tables in schema public to anon;
+grant all on all tables in schema public to authenticated;
+
+grant all on all sequences in schema public to anon;
+grant all on all sequences in schema public to authenticated;

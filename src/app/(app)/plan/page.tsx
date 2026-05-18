@@ -1,5 +1,5 @@
-import PlanClient from "@/components/plan";
+import Plan from "@/components/plan";
 
-export default function ActivitiesPage() {
-  return <PlanClient />;
+export default function PlanPage() {
+  return <Plan />;
 }

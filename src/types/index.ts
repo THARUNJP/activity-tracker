@@ -107,6 +107,21 @@ export interface ScheduleProps {
   initialSchedules: Schedule[];
 }
 
+export interface Plan {
+  id: string;
+  user_id: string;
+  activity_id: string;
+  start_time: string; // "HH:MM:SS" or "HH:MM"
+  end_time: string;
+  created_at: string;
+}
+
+export interface PlanProps {
+  userId: string;
+  activities: ActivityTarget[];
+  initialPlans: Plan[];
+}
+
 
 // types/dashboard.ts
 export interface DashboardEntry {
